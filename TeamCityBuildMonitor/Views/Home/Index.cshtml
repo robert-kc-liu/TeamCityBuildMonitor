@@ -1,0 +1,155 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<script>
+
+    $(function() {
+
+        var refreshTimer;
+
+        $("#Refresh").click(function(e) {
+            e.preventDefault();
+
+            $("#Refresh").addClass("disable-link");
+
+            $("#LoadLabel").css("visibility", "visible");
+
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetBuildStatus")'
+            }).done(function(data) {
+                $("#LoadLabel").css("visibility", "hidden");
+                $("#FailedProjects").css("visibility", "hidden");
+
+                $("#FailedProjectList").empty();
+
+                $("#StatusDisplay").removeClass("banner-good");
+                $("#StatusDisplay").removeClass("banner-bad");
+                $("#StatusDisplay").removeClass("banner-all-investigated");
+
+                if (data.BuildState == 0) {
+                    $("#StatusDisplay").addClass("banner-good");
+                } else {
+                    
+                    if (data.BuildState == 1) {
+                        $("#StatusDisplay").addClass("banner-bad");
+                    } else {
+                        $("#StatusDisplay").addClass("banner-all-investigated");
+                    }
+
+                    data.FailedBuilds.forEach(function (build) {
+
+                        var failedProjectBuild = build.ProjectName + ' (' + build.BuildTypeId + ')';
+
+                        if (build.BeenInvestigated) {
+                            failedProjectBuild += ' [under investigation by ' + build.Assignee + ']';
+                        }
+
+                        $("#FailedProjectList").append(
+                            '<li><a href="' + build.BuildLogUrl + '">' + failedProjectBuild + '</a></li>'
+                        );
+                    });
+
+                    $("#FailedProjects").css("visibility", "visible");
+                }
+
+                $("#TotalProject").text(data.ProjectTotal);
+                $("#ProjectFailed").text(data.ProjectFailed);
+                $("#BuildTypeTotal").text(data.BuildTypeTotal);
+                $("#BuildTypeFailed").text(data.BuildTypeFailed);
+
+                $("#LastUpdateTime").text(formatAMPM(new Date()));
+                $("#LastUpdate").css("visibility", "visible");
+
+                $("#BuildStats").css("visibility", "visible");
+
+                $("#Refresh").removeClass("disable-link");
+            });
+
+        });
+
+        $("#AutoRefresh").click(function() {
+            if ($(this).is(':checked')) {
+                refreshTimer = setInterval(getBuildStatus, 120000); // 2 minute interval
+            } else {
+                clearInterval(refreshTimer);
+            }
+        });
+
+    });
+
+    function getBuildStatus() {
+        if (!$("#Refresh").hasClass("disable-link")) {
+            $("#Refresh").click();
+        }
+    }
+
+    function formatAMPM(date) {
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        var seconds = date.getSeconds();
+
+        var ampm = hours >= 12 ? 'pm' : 'am';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+
+        var day = date.getDate();
+        var month = date.getMonth() + 1;
+        var year = date.getFullYear();
+
+        var strTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm + ' on ' + day + '/' + month + '/' + year;
+
+        return strTime;
+    }
+
+</script>
+
+<br/>
+
+<div class="row">
+    <div class="col-md-2">
+        <input type="checkbox" id="AutoRefresh" /> Auto Refresh
+    </div>
+    <div class="col-md-2">
+        <a href="" id="Refresh"><span class="glyphicon glyphicon-refresh"></span></a>
+        <span id="LoadLabel" style="visibility: hidden">Loading ...</span>
+    </div>
+
+    <div class="col-md-4">
+        <span class="label label-success">Builds OK</span>
+        <span class="label label-warning">Builds under Investigation</span>
+        <span class="label label-danger">Builds Failed</span>
+    </div>
+
+    <div class="col-md-4 text-right">
+        <span id="LastUpdate" style="visibility: hidden">Last updated:</span>&nbsp;<span id="LastUpdateTime"></span>
+    </div>
+</div>
+
+<div class="jumbotron banner" id="StatusDisplay"></div>
+
+<div id="BuildStats" class="row" style="visibility: hidden">
+    <div class="col-md-2">
+        <label>Project Total:</label>&nbsp;<span id="TotalProject"></span>
+    </div>
+    <div class="col-md-2">
+        <label>Projects Failed:</label>&nbsp;<span id="ProjectFailed"></span>
+    </div>
+    <div class="col-md-1"></div>
+    <div class="col-md-3">
+        <label>Build Configuration Total:</label>&nbsp;<span id="BuildTypeTotal"></span>
+    </div>
+    <div class="col-md-3">
+        <label>Build Configuration Failed:</label>&nbsp;<span id="BuildTypeFailed"></span>
+    </div>
+    <div class="col-md-1"></div>
+</div>
+
+<br/>
+
+<div id="FailedProjects" style="visibility: hidden">
+    <label>Failed Project Builds:</label>
+    <ul id="FailedProjectList"></ul>
+</div>
