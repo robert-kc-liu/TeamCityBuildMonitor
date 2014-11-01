@@ -1,7 +1,8 @@
 ﻿TeamCity Build Monitor
 ===
 
-Looking for a easy way to display your current TeamCity build status on a monitor? Then look below for a demo!
+Looking for a easy way to display your current TeamCity build status on a monitor? 
+Then look below for a demo!
 
 ![Sample monitor](/Images/Demo.png)
 
@@ -11,4 +12,11 @@ The polling is done at a two minute interval. And you can set your TeamCity REST
 
 Enjoy~
 
-Support: TeamCity server 8.1+
+## Features ##
+* Build status (ok / failed / under investigation)
+* Failed project and build configuration details
+* Manual and auto-refresh
+* Last update time
+
+## Support ##
+TeamCity server 8.1+
