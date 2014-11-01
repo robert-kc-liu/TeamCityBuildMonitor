@@ -8,7 +8,7 @@ namespace TeamCityBuildMonitor.BuildMonitor
     public class BuildMonitor
     {
         private readonly RestClient _client;
-        private const string Root = "http://olga/guestAuth/app/rest";
+        private const string Root = "http://[teamcity_server]/guestAuth/app/rest";
         private const string BuildTypeBuildsFormatString = "/buildTypes/id:{0}/builds/";
         private const string InvestigationByBuildTypeFormatString = "investigations/buildType:(id:{0})";
 
